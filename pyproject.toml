@@ -1,0 +1,24 @@
+[project]
+name = "customer-support-agent-desk"
+version = "0.1.0"
+description = "Portfolio-ready multi-agent customer support desk with routing, tools, guardrails, approvals, and evals."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.137.0",
+    "httpx>=0.28.0",
+    "pydantic>=2.13.0",
+    "python-dotenv>=1.2.0",
+    "uvicorn>=0.49.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.1.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
+
