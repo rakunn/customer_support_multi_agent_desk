@@ -1,0 +1,87 @@
+[
+  {
+    "id": "1003",
+    "customer_id": "cust_001",
+    "status": "shipped",
+    "amount": 42.5,
+    "items": [
+      {
+        "sku": "desk-mat-charcoal",
+        "name": "Charcoal Desk Mat",
+        "quantity": 1,
+        "price": 42.5
+      }
+    ],
+    "shipping_status": "In transit; expected delivery June 22, 2026",
+    "delivered_at": null,
+    "is_final_sale": false
+  },
+  {
+    "id": "1005",
+    "customer_id": "cust_001",
+    "status": "delivered",
+    "amount": 125.0,
+    "items": [
+      {
+        "sku": "keyboard-pro",
+        "name": "Pro Mechanical Keyboard",
+        "quantity": 1,
+        "price": 125.0
+      }
+    ],
+    "shipping_status": "Delivered June 14, 2026",
+    "delivered_at": "2026-06-14T16:22:00Z",
+    "is_final_sale": false
+  },
+  {
+    "id": "1010",
+    "customer_id": "cust_001",
+    "status": "delivered",
+    "amount": 38.0,
+    "items": [
+      {
+        "sku": "clearance-stand",
+        "name": "Clearance Laptop Stand",
+        "quantity": 1,
+        "price": 38.0
+      }
+    ],
+    "shipping_status": "Delivered June 10, 2026",
+    "delivered_at": "2026-06-10T10:10:00Z",
+    "is_final_sale": true
+  },
+  {
+    "id": "1007",
+    "customer_id": "cust_002",
+    "status": "processing",
+    "amount": 89.0,
+    "items": [
+      {
+        "sku": "dock-lite",
+        "name": "USB-C Dock Lite",
+        "quantity": 1,
+        "price": 89.0
+      }
+    ],
+    "shipping_status": "Preparing for shipment",
+    "delivered_at": null,
+    "is_final_sale": false
+  },
+  {
+    "id": "2001",
+    "customer_id": "cust_003",
+    "status": "delivered",
+    "amount": 240.0,
+    "items": [
+      {
+        "sku": "team-license",
+        "name": "Team License Renewal",
+        "quantity": 1,
+        "price": 240.0
+      }
+    ],
+    "shipping_status": "Digital delivery completed",
+    "delivered_at": "2026-06-01T08:00:00Z",
+    "is_final_sale": false
+  }
+]
