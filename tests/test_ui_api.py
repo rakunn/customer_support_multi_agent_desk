@@ -19,6 +19,32 @@ def test_root_serves_support_desk_ui() -> None:
     assert "Approval Queue" in response.text
 
 
+def test_root_chat_starts_without_pretending_customer_sent_message() -> None:
+    client = TestClient(app)
+
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert '<article class="message customer">' not in response.text
+    assert ">I want a refund for order #1005. It arrived damaged.</textarea>" not in response.text
+
+
+def test_root_system_message_suggests_quick_non_refund_examples() -> None:
+    client = TestClient(app)
+
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert (
+        "Send a message to see how the desk routes it, checks order details, "
+        "handles approvals, and reviews the reply."
+    ) in response.text
+    assert "Where is my order #1003?" in response.text
+    assert "What is your return policy for opened items?" in response.text
+    assert "The CSV upload page crashes." in response.text
+    assert "Please escalate this to a human." in response.text
+
+
 def test_root_exposes_navigation_targets_for_approvals_and_evals() -> None:
     client = TestClient(app)
 

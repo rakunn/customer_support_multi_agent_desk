@@ -52,13 +52,9 @@
         <section class="desk-grid">
           <section class="chat-panel" aria-label="Customer chat">
             <div id="chatLog" class="chat-log">
-              <article class="message customer">
-                <div class="message-meta">Customer</div>
-                <p>I want a refund for order #1005. It arrived damaged.</p>
-              </article>
               <article class="message agent">
-                <div class="message-meta">Refund Agent</div>
-                <p>Send a message to run triage, tools, approval checks, and output review.</p>
+                <div class="message-meta">System</div>
+                <p>Send a message to see how the desk routes it, checks order details, handles approvals, and reviews the reply. Try: Where is my order #1003? | What is your return policy for opened items? | The CSV upload page crashes. | Please escalate this to a human.</p>
               </article>
             </div>
             <form id="chatForm" class="composer">
@@ -68,7 +64,11 @@
                 value="maya@example.com"
                 aria-label="Customer email"
               />
-              <textarea id="messageInput" aria-label="Customer message">I want a refund for order #1005. It arrived damaged.</textarea>
+              <textarea
+                id="messageInput"
+                aria-label="Customer message"
+                placeholder="Try: I want a refund for order #1005. It arrived damaged."
+              ></textarea>
               <button type="submit">Send</button>
             </form>
           </section>

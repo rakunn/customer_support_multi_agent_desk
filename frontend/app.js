@@ -86,7 +86,7 @@ async function refreshApprovals() {
   try {
     const approvals = await fetchJson("/api/approvals?status=pending");
     if (!approvals.length) {
-      approvalList.innerHTML = '<div class="empty-state">No pending approval requests. Send the sample refund message to create one.</div>';
+      approvalList.innerHTML = '<div class="empty-state">No pending approval requests. Send a refund request to create one.</div>';
       return;
     }
     approvalList.innerHTML = approvals

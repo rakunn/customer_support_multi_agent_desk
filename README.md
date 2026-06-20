@@ -1,8 +1,8 @@
 # Customer Support Agent Desk
 
-Customer Support Agent Desk is a portfolio-ready customer support automation demo. It routes messages to specialist agents, uses typed tools over mock customer and order data, retrieves policy answers from local Markdown docs, creates human approval requests for risky refunds, applies guardrails, logs audit traces, and measures behavior with eval cases.
+Customer Support Agent Desk is an experimental multi-agent customer support project for exploring how specialist agents interact in a support workflow. It routes messages to specialist agents, uses typed tools over mock customer and order data, retrieves policy answers from local Markdown docs, creates human approval requests for risky refunds, applies guardrails, logs audit traces, and measures behavior with eval cases.
 
-The MVP is deterministic and local by design, so reviewers can run it without API keys. `.env.example` keeps the project ready for a future live OpenAI Agents SDK adapter.
+The MVP is deterministic and local by design, so it can be run and inspected without API keys. `.env.example` keeps the project ready for a future live OpenAI Agents SDK adapter.
 
 ![Support desk refund approval](docs/screenshots/support-desk-refund-approval.png)
 

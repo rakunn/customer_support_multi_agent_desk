@@ -42,7 +42,7 @@ flowchart TD
 
 ## Runtime Model
 
-The MVP intentionally avoids requiring an OpenAI key for the portfolio demo. It uses deterministic local routing and lexical retrieval so tests and evals are repeatable. `.env.example` keeps the project ready for a future OpenAI Agents SDK adapter.
+The MVP intentionally avoids requiring an OpenAI key. It uses deterministic local routing and lexical retrieval so tests and evals are repeatable. `.env.example` keeps the project ready for a future OpenAI Agents SDK adapter.
 
 The local SQLite database is created from `DATABASE_URL` and stores customers, seed orders, custom orders, tickets, approvals, refund markers, and audit traces. Database Admin can clear workflow data while keeping orders, or restore the exact JSON seed customers and orders and delete custom orders.
 

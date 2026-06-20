@@ -17,6 +17,9 @@ evals/reports/*.json
 evals/reports/*.md
 !evals/reports/.gitkeep
 
+# Local implementation notes
+customer_support_agent_desk_implementation_plan.md
+
 node_modules/
 frontend/.next/
 frontend/out/
