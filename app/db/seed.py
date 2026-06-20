@@ -43,6 +43,7 @@ class DemoStore:
         }
         self.tickets: dict[str, Ticket] = {}
         self.approvals: dict[str, ApprovalRequest] = {}
+        self.agent_events: list[dict[str, Any]] = []
         self.refunded_approval_ids: set[str] = set()
         self._ticket_counter = 1
         self._approval_counter = 1
@@ -63,4 +64,3 @@ def utc_now() -> datetime:
 
 
 demo_store = DemoStore()
-
