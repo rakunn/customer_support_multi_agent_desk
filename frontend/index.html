@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Customer Support Agent Desk</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="img">
+              <path d="M5 7.8C5 5.7 6.7 4 8.8 4h6.4C17.3 4 19 5.7 19 7.8v4.4c0 2.1-1.7 3.8-3.8 3.8h-2.5L8.3 20v-4H8.8C6.7 16 5 14.3 5 12.2V7.8Z" />
+            </svg>
+          </span>
+          <span>Customer Support Agent Desk</span>
+        </div>
+        <nav class="nav-list" aria-label="Workspace">
+          <button class="nav-item active" type="button">Tickets</button>
+          <button class="nav-item" type="button">Approvals</button>
+          <button class="nav-item" type="button">Evaluations</button>
+        </nav>
+        <section class="ticket-section">
+          <div class="section-header">
+            <h2>Tickets</h2>
+            <button id="refreshTickets" class="icon-button" type="button" title="Refresh tickets">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M20 11a8 8 0 0 0-14.4-4.8L4 8m0 0h5M4 8V3m0 10a8 8 0 0 0 14.4 4.8L20 16m0 0h-5m5 0v5" />
+              </svg>
+            </button>
+          </div>
+          <div id="ticketList" class="ticket-list" aria-live="polite"></div>
+        </section>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <h1>Chat</h1>
+            <p>Route, inspect, approve, and audit agent work from one screen.</p>
+          </div>
+          <div class="status-strip">
+            <span class="status-dot"></span>
+            Local deterministic agents
+          </div>
+        </header>
+
+        <section class="desk-grid">
+          <section class="chat-panel" aria-label="Customer chat">
+            <div id="chatLog" class="chat-log">
+              <article class="message customer">
+                <div class="message-meta">Customer</div>
+                <p>I want a refund for order #1005. It arrived damaged.</p>
+              </article>
+              <article class="message agent">
+                <div class="message-meta">Refund Agent</div>
+                <p>Send a message to run triage, tools, approval checks, and output review.</p>
+              </article>
+            </div>
+            <form id="chatForm" class="composer">
+              <input
+                id="customerEmail"
+                type="email"
+                value="maya@example.com"
+                aria-label="Customer email"
+              />
+              <textarea id="messageInput" aria-label="Customer message">I want a refund for order #1005. It arrived damaged.</textarea>
+              <button type="submit">Send</button>
+            </form>
+          </section>
+
+          <aside class="context-panel" aria-label="Customer and order context">
+            <section class="context-block">
+              <h2>Customer</h2>
+              <dl>
+                <div><dt>Name</dt><dd>Maya Chen</dd></div>
+                <div><dt>Email</dt><dd>maya@example.com</dd></div>
+                <div><dt>Tier</dt><dd>standard</dd></div>
+              </dl>
+            </section>
+            <section class="context-block">
+              <h2>Order Context</h2>
+              <dl>
+                <div><dt>Recent order</dt><dd>#1005</dd></div>
+                <div><dt>Amount</dt><dd>$125.00</dd></div>
+                <div><dt>Policy flag</dt><dd>Approval required</dd></div>
+              </dl>
+            </section>
+          </aside>
+        </section>
+
+        <section class="lower-grid">
+          <section class="approval-panel">
+            <div class="section-header">
+              <h2>Approval Queue</h2>
+              <button id="refreshApprovals" class="secondary-button" type="button">Refresh</button>
+            </div>
+            <div id="approvalList" class="approval-list" aria-live="polite"></div>
+          </section>
+
+          <section class="trace-panel">
+            <div class="section-header">
+              <h2>Agent Trace</h2>
+              <button id="refreshTraces" class="secondary-button" type="button">Refresh</button>
+            </div>
+            <div id="traceList" class="trace-list" aria-live="polite"></div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <script src="/assets/app.js"></script>
+  </body>
+</html>
+
