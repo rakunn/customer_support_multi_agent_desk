@@ -9,8 +9,15 @@ const navItems = document.querySelectorAll(".nav-item[data-view]");
 const ticketSection = document.querySelector(".ticket-section");
 const approvalPanel = document.querySelector("#approvalPanel");
 const evaluationPanel = document.querySelector("#evaluationPanel");
+const ordersPanel = document.querySelector("#ordersPanel");
+const databaseAdminPanel = document.querySelector("#databaseAdminPanel");
 const runEvalsButton = document.querySelector("#runEvals");
 const evalResults = document.querySelector("#evalResults");
+const createOrderForm = document.querySelector("#createOrderForm");
+const ordersList = document.querySelector("#ordersList");
+const adminStats = document.querySelector("#adminStats");
+const resetDatabaseButton = document.querySelector("#resetDatabase");
+const purgeWorkflowButton = document.querySelector("#purgeWorkflow");
 
 function escapeHtml(value) {
   return String(value)
@@ -124,7 +131,7 @@ async function refreshTraces() {
 }
 
 async function refreshAll() {
-  await Promise.all([refreshTickets(), refreshApprovals(), refreshTraces()]);
+  await Promise.all([refreshTickets(), refreshApprovals(), refreshTraces(), refreshOrders(), refreshAdminStats()]);
 }
 
 function renderEvalReport(report) {
@@ -164,6 +171,119 @@ async function runEvaluations() {
   }
 }
 
+function renderStats(stats) {
+  const rows = [
+    ["Customers", stats.customers],
+    ["Orders", stats.orders],
+    ["Custom orders", stats.custom_orders],
+    ["Tickets", stats.tickets],
+    ["Approvals", stats.approvals],
+    ["Trace events", stats.traces],
+  ];
+  adminStats.innerHTML = `
+    <div class="metric-grid">
+      ${rows
+        .map(([label, value]) => `
+          <article class="metric-card">
+            <span>${escapeHtml(label)}</span>
+            <strong>${escapeHtml(value)}</strong>
+          </article>
+        `)
+        .join("")}
+    </div>
+  `;
+}
+
+async function refreshAdminStats() {
+  try {
+    const stats = await fetchJson("/api/admin/stats");
+    renderStats(stats);
+  } catch (error) {
+    showInlineError(adminStats, "Could not load database stats.");
+  }
+}
+
+async function refreshOrders() {
+  try {
+    const records = await fetchJson("/api/orders");
+    if (!records.length) {
+      ordersList.innerHTML = '<div class="empty-state">No orders found.</div>';
+      return;
+    }
+    ordersList.innerHTML = records
+      .map(({ order, is_seed: isSeed }) => `
+        <article class="order-row">
+          <div>
+            <strong>#${escapeHtml(order.id)} · ${escapeHtml(order.items[0]?.name || "Item")} · $${Number(order.amount).toFixed(2)}</strong>
+            <span>${escapeHtml(order.status)} · ${escapeHtml(order.shipping_status)} · ${isSeed ? "seed" : "custom"}</span>
+          </div>
+          ${isSeed ? "" : `<button type="button" data-order="${escapeHtml(order.id)}">Delete</button>`}
+        </article>
+      `)
+      .join("");
+  } catch (error) {
+    showInlineError(ordersList, "Could not load orders.");
+  }
+}
+
+function orderFormPayload() {
+  const deliveredAt = document.querySelector("#newOrderDeliveredAt").value;
+  return {
+    id: document.querySelector("#newOrderId").value.trim(),
+    customer_email: document.querySelector("#newOrderEmail").value.trim(),
+    status: document.querySelector("#newOrderStatus").value,
+    amount: Number(document.querySelector("#newOrderAmount").value),
+    item_name: document.querySelector("#newOrderItem").value.trim(),
+    shipping_status: document.querySelector("#newOrderShipping").value.trim(),
+    delivered_at: deliveredAt ? new Date(deliveredAt).toISOString() : null,
+    is_final_sale: document.querySelector("#newOrderFinalSale").checked,
+  };
+}
+
+async function createOrder(event) {
+  event.preventDefault();
+  try {
+    const order = await fetchJson("/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(orderFormPayload()),
+    });
+    appendMessage("agent", "Database Admin", `Order #${order.id} is ready for agent testing.`);
+    await Promise.all([refreshOrders(), refreshAdminStats()]);
+    focusPanel(ordersPanel);
+  } catch (error) {
+    showInlineError(ordersList, "Could not create order. Check the customer email and order ID.");
+  }
+}
+
+async function resetDatabase() {
+  resetDatabaseButton.disabled = true;
+  try {
+    await fetchJson("/api/admin/reset", { method: "POST" });
+    appendMessage("agent", "Database Admin", "Database restored to the JSON seed state.");
+    await refreshAll();
+    focusPanel(databaseAdminPanel);
+  } catch (error) {
+    showInlineError(adminStats, "Could not restore seed data.");
+  } finally {
+    resetDatabaseButton.disabled = false;
+  }
+}
+
+async function purgeWorkflow() {
+  purgeWorkflowButton.disabled = true;
+  try {
+    await fetchJson("/api/admin/purge-workflow", { method: "POST" });
+    appendMessage("agent", "Database Admin", "Tickets, approvals, traces, and refund markers were cleared.");
+    await refreshAll();
+    focusPanel(databaseAdminPanel);
+  } catch (error) {
+    showInlineError(adminStats, "Could not clear workflow data.");
+  } finally {
+    purgeWorkflowButton.disabled = false;
+  }
+}
+
 async function setActiveView(view) {
   navItems.forEach((item) => {
     const isActive = item.dataset.view === view;
@@ -179,9 +299,17 @@ async function setActiveView(view) {
     await refreshApprovals();
     focusPanel(approvalPanel);
   }
+  if (view === "orders") {
+    await refreshOrders();
+    focusPanel(ordersPanel);
+  }
   if (view === "evaluations") {
     focusPanel(evaluationPanel);
     await runEvaluations();
+  }
+  if (view === "database-admin") {
+    await refreshAdminStats();
+    focusPanel(databaseAdminPanel);
   }
 }
 
@@ -234,6 +362,20 @@ approvalList.addEventListener("click", async (event) => {
   }
 });
 
+ordersList.addEventListener("click", async (event) => {
+  const button = event.target.closest("button[data-order]");
+  if (!button) {
+    return;
+  }
+  button.disabled = true;
+  try {
+    await fetchJson(`/api/orders/${button.dataset.order}`, { method: "DELETE" });
+    await Promise.all([refreshOrders(), refreshAdminStats()]);
+  } catch (error) {
+    showInlineError(ordersList, "Could not delete that custom order.");
+  }
+});
+
 navItems.forEach((item) => {
   item.addEventListener("click", () => {
     setActiveView(item.dataset.view);
@@ -242,6 +384,11 @@ navItems.forEach((item) => {
 document.querySelector("#refreshTickets").addEventListener("click", refreshTickets);
 document.querySelector("#refreshApprovals").addEventListener("click", refreshApprovals);
 document.querySelector("#refreshTraces").addEventListener("click", refreshTraces);
+document.querySelector("#refreshOrders").addEventListener("click", refreshOrders);
+document.querySelector("#refreshAdminStats").addEventListener("click", refreshAdminStats);
 runEvalsButton.addEventListener("click", runEvaluations);
+createOrderForm.addEventListener("submit", createOrder);
+resetDatabaseButton.addEventListener("click", resetDatabase);
+purgeWorkflowButton.addEventListener("click", purgeWorkflow);
 
 refreshAll();

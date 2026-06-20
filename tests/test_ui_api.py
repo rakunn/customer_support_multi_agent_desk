@@ -31,11 +31,25 @@ def test_root_exposes_navigation_targets_for_approvals_and_evals() -> None:
     assert 'id="runEvals"' in response.text
 
 
+def test_root_exposes_orders_and_database_admin_sections() -> None:
+    client = TestClient(app)
+
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert 'data-view="orders"' in response.text
+    assert 'data-view="database-admin"' in response.text
+    assert 'id="createOrderForm"' in response.text
+    assert 'id="databaseAdminPanel"' in response.text
+
+
 def test_frontend_script_wires_navigation_and_eval_runner() -> None:
     script = Path("frontend/app.js").read_text(encoding="utf-8")
 
     assert "setActiveView" in script
     assert "/api/evals/run" in script
+    assert "/api/orders" in script
+    assert "/api/admin/reset" in script
 
 
 def test_ticket_and_trace_endpoints_return_chat_state() -> None:

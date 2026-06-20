@@ -4,9 +4,11 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from app.api.admin import router as admin_router
 from app.api.approvals import router as approvals_router
 from app.api.chat import router as chat_router
 from app.api.evals import router as evals_router
+from app.api.orders import router as orders_router
 from app.api.tickets import router as tickets_router
 from app.api.traces import router as traces_router
 
@@ -22,6 +24,8 @@ app = FastAPI(
 app.include_router(chat_router)
 app.include_router(approvals_router)
 app.include_router(evals_router)
+app.include_router(orders_router)
+app.include_router(admin_router)
 app.include_router(tickets_router)
 app.include_router(traces_router)
 

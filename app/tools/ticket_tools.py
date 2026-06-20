@@ -26,8 +26,7 @@ def create_ticket(customer_id: str | None, issue_type: str, summary: str, priori
         created_at=now,
         updated_at=now,
     )
-    demo_store.tickets[ticket.id] = ticket
-    return ticket
+    return demo_store.save_ticket(ticket)
 
 
 def update_ticket(ticket_id: str, status: TicketStatus, note: str) -> Ticket | ToolError:
@@ -42,8 +41,7 @@ def update_ticket(ticket_id: str, status: TicketStatus, note: str) -> Ticket | T
         "notes": [*ticket.notes, note],
         "updated_at": utc_now(),
     })
-    demo_store.tickets[ticket_id] = updated
-    return updated
+    return demo_store.save_ticket(updated)
 
 
 def assign_ticket(ticket_id: str, team: str) -> Ticket | ToolError:
@@ -54,6 +52,4 @@ def assign_ticket(ticket_id: str, team: str) -> Ticket | ToolError:
             message="No ticket was found for that ticket ID.",
         )
     updated = ticket.model_copy(update={"assigned_team": team, "updated_at": utc_now()})
-    demo_store.tickets[ticket_id] = updated
-    return updated
-
+    return demo_store.save_ticket(updated)

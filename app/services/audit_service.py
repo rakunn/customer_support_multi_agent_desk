@@ -9,7 +9,7 @@ def log_agent_event(
     event_type: str,
     payload: dict[str, Any],
 ) -> None:
-    demo_store.agent_events.append(
+    demo_store.add_agent_event(
         {
             "session_id": session_id,
             "agent_name": agent_name,
@@ -22,4 +22,3 @@ def log_agent_event(
 
 def list_agent_events() -> list[dict[str, Any]]:
     return list(demo_store.agent_events)
-

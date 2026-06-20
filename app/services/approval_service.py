@@ -21,7 +21,7 @@ def approve_refund_request(approval_id: str) -> ApprovalDecisionResponse | ToolE
         )
 
     approved = approval.model_copy(update={"status": "approved", "updated_at": utc_now()})
-    demo_store.approvals[approval_id] = approved
+    demo_store.save_approval(approved)
     refund_result = issue_mock_refund(approval_id)
     if isinstance(refund_result, ToolError):
         return refund_result
@@ -41,9 +41,8 @@ def reject_refund_request(approval_id: str) -> ApprovalDecisionResponse | ToolEr
         )
 
     rejected = approval.model_copy(update={"status": "rejected", "updated_at": utc_now()})
-    demo_store.approvals[approval_id] = rejected
+    demo_store.save_approval(rejected)
     if rejected.ticket_id:
         update_ticket(rejected.ticket_id, "escalated", f"Rejected refund {rejected.id}; human follow-up required.")
 
     return ApprovalDecisionResponse(approval=rejected, refund_result=None)
-

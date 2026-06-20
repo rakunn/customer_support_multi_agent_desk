@@ -91,8 +91,7 @@ def create_refund_approval_request(
         created_at=now,
         updated_at=now,
     )
-    demo_store.approvals[approval.id] = approval
-    return approval
+    return demo_store.save_approval(approval)
 
 
 def issue_mock_refund(approval_id: str) -> RefundResult | ToolError:
@@ -115,7 +114,7 @@ def issue_mock_refund(approval_id: str) -> RefundResult | ToolError:
             message="This approval has already been processed.",
         )
 
-    demo_store.refunded_approval_ids.add(approval.id)
+    demo_store.mark_refunded(approval.id)
     return RefundResult(
         approval_id=approval.id,
         order_id=approval.order_id,
@@ -124,4 +123,3 @@ def issue_mock_refund(approval_id: str) -> RefundResult | ToolError:
         message="Refund processed in the mock system.",
         processed_at=utc_now(),
     )
-

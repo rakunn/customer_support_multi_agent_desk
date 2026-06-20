@@ -19,8 +19,10 @@
         </div>
         <nav class="nav-list" aria-label="Workspace">
           <button class="nav-item active" type="button" data-view="tickets" aria-pressed="true">Tickets</button>
+          <button class="nav-item" type="button" data-view="orders" aria-pressed="false">Orders</button>
           <button class="nav-item" type="button" data-view="approvals" aria-pressed="false">Approvals</button>
           <button class="nav-item" type="button" data-view="evaluations" aria-pressed="false">Evaluations</button>
+          <button class="nav-item" type="button" data-view="database-admin" aria-pressed="false">Database Admin</button>
         </nav>
         <section class="ticket-section">
           <div class="section-header">
@@ -119,6 +121,72 @@
           </div>
           <div id="evalResults" class="eval-results" aria-live="polite">
             <div class="empty-state">No eval run yet.</div>
+          </div>
+        </section>
+
+        <section id="ordersPanel" class="orders-panel" tabindex="-1">
+          <div class="section-header">
+            <div>
+              <h2>Orders</h2>
+              <p>Add lightweight test orders that agents can use immediately.</p>
+            </div>
+            <button id="refreshOrders" class="secondary-button" type="button">Refresh</button>
+          </div>
+          <form id="createOrderForm" class="order-form">
+            <label>
+              Order ID
+              <input id="newOrderId" name="id" value="1234" required />
+            </label>
+            <label>
+              Customer email
+              <input id="newOrderEmail" name="customer_email" type="email" value="maya@example.com" required />
+            </label>
+            <label>
+              Status
+              <select id="newOrderStatus" name="status">
+                <option value="processing">processing</option>
+                <option value="shipped" selected>shipped</option>
+                <option value="delivered">delivered</option>
+                <option value="cancelled">cancelled</option>
+              </select>
+            </label>
+            <label>
+              Amount
+              <input id="newOrderAmount" name="amount" type="number" min="0" step="0.01" value="64.50" required />
+            </label>
+            <label>
+              Item name
+              <input id="newOrderItem" name="item_name" value="Test Travel Dock" required />
+            </label>
+            <label>
+              Shipping status
+              <input id="newOrderShipping" name="shipping_status" value="Label created for QA shipment" required />
+            </label>
+            <label>
+              Delivered at
+              <input id="newOrderDeliveredAt" name="delivered_at" type="datetime-local" />
+            </label>
+            <label class="checkbox-row">
+              <input id="newOrderFinalSale" name="is_final_sale" type="checkbox" />
+              Final sale
+            </label>
+            <button type="submit">Create order</button>
+          </form>
+          <div id="ordersList" class="orders-list" aria-live="polite"></div>
+        </section>
+
+        <section id="databaseAdminPanel" class="database-admin-panel" tabindex="-1">
+          <div class="section-header">
+            <div>
+              <h2>Database Admin</h2>
+              <p>Reset the SQLite demo database or clear workflow noise while keeping orders.</p>
+            </div>
+            <button id="refreshAdminStats" class="secondary-button" type="button">Refresh</button>
+          </div>
+          <div id="adminStats" class="admin-stats" aria-live="polite"></div>
+          <div class="admin-actions">
+            <button id="purgeWorkflow" class="secondary-button" type="button">Clear workflow data</button>
+            <button id="resetDatabase" class="danger-button" type="button">Restore seed data</button>
           </div>
         </section>
       </main>

@@ -113,7 +113,9 @@ textarea {
 .trace-panel,
 .chat-panel,
 .context-panel,
-.evaluation-panel {
+.evaluation-panel,
+.orders-panel,
+.database-admin-panel {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -174,7 +176,9 @@ textarea {
 .ticket-list,
 .approval-list,
 .trace-list,
-.eval-results {
+.eval-results,
+.orders-list,
+.admin-stats {
   display: grid;
   gap: 10px;
   padding: 12px;
@@ -386,8 +390,105 @@ dd {
   gap: 18px;
 }
 
-.evaluation-panel {
+.evaluation-panel,
+.orders-panel,
+.database-admin-panel {
   scroll-margin: 18px;
+}
+
+.order-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.order-form label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.order-form input,
+.order-form select {
+  min-height: 38px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--text);
+  background: white;
+}
+
+.order-form .checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+}
+
+.order-form .checkbox-row input {
+  min-height: auto;
+}
+
+.order-form button,
+.danger-button {
+  min-height: 38px;
+  align-self: end;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--accent);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.order-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: #fff;
+}
+
+.order-row strong {
+  display: block;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.order-row span {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.order-row button {
+  min-height: 32px;
+  border: 1px solid #f1b8b3;
+  border-radius: 8px;
+  background: white;
+  color: var(--danger);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 10px;
+  padding: 0 12px 14px;
+}
+
+.danger-button {
+  background: var(--danger);
+  border-color: var(--danger);
 }
 
 .metric-grid {
@@ -485,8 +586,13 @@ dd {
 
   .desk-grid,
   .lower-grid,
-  .metric-grid {
+  .metric-grid,
+  .order-form {
     grid-template-columns: 1fr;
+  }
+
+  .admin-actions {
+    flex-direction: column;
   }
 
   .composer {
