@@ -27,7 +27,7 @@ def test_list_customer_orders_returns_orders_for_customer() -> None:
     orders = list_customer_orders("cust_001")
 
     assert not isinstance(orders, ToolError)
-    assert {order.id for order in orders} == {"1003", "1005", "1010"}
+    assert {order.id for order in orders} == {"1003", "1005", "1008", "1010"}
 
 
 def test_lookup_order_returns_safe_error_for_unknown_id() -> None:

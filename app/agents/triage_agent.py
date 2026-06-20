@@ -27,13 +27,26 @@ def classify_message(message: str) -> TriageResult:
     normalized = message.lower()
     order_id = _extract_order_id(message)
 
-    if any(term in normalized for term in ("policy", "shipping", "ship internationally", "warranty", "opened items")):
+    if any(
+        term in normalized
+        for term in (
+            "policy",
+            "shipping",
+            "ship internationally",
+            "warranty",
+            "opened items",
+            "delivery address",
+            "address change",
+            "automatic refund limit",
+            "refund limit",
+        )
+    ):
         intent = "faq_policy_question"
         agent = "FAQ Agent"
     elif any(term in normalized for term in ("refund", "return", "money back", "damaged")):
         intent = "refund_request"
         agent = "Refund Agent"
-    elif any(term in normalized for term in ("where is order", "track", "tracking", "package", "delivery")):
+    elif any(term in normalized for term in ("where is order", "where is my order", "track", "tracking", "package", "delivery")):
         intent = "order_status"
         agent = "Order Status Agent"
     elif any(term in normalized for term in ("crash", "upload", "sync", "password", "integration", "bug")):

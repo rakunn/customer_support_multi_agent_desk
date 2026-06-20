@@ -38,3 +38,7 @@ class RefundResult(BaseModel):
     message: str
     processed_at: datetime
 
+
+class ApprovalDecisionResponse(BaseModel):
+    approval: ApprovalRequest
+    refund_result: RefundResult | None = None

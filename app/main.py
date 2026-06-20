@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from app.api.approvals import router as approvals_router
 from app.api.chat import router as chat_router
 
 app = FastAPI(
@@ -9,6 +10,7 @@ app = FastAPI(
 )
 
 app.include_router(chat_router)
+app.include_router(approvals_router)
 
 
 @app.get("/health", tags=["system"])

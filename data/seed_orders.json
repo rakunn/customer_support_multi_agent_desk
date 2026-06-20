@@ -51,6 +51,23 @@
     "is_final_sale": true
   },
   {
+    "id": "1008",
+    "customer_id": "cust_001",
+    "status": "delivered",
+    "amount": 24.0,
+    "items": [
+      {
+        "sku": "cable-wrap",
+        "name": "Cable Wrap Set",
+        "quantity": 1,
+        "price": 24.0
+      }
+    ],
+    "shipping_status": "Delivered June 18, 2026",
+    "delivered_at": "2026-06-18T12:30:00Z",
+    "is_final_sale": false
+  },
+  {
     "id": "1007",
     "customer_id": "cust_002",
     "status": "processing",

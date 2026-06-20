@@ -12,6 +12,9 @@ PROMPT_INJECTION_PATTERNS = (
 )
 
 OFF_TOPIC_PATTERNS = (
+    "another customer's address",
+    "another customers address",
+    "another customer",
     "homework",
     "essay",
     "write my paper",
@@ -48,4 +51,3 @@ def evaluate_input(message: str) -> InputGuardrailResult:
         intent="support_request",
         safe_message=message,
     )
-
