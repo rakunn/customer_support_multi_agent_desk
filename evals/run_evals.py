@@ -47,7 +47,7 @@ def run_evaluations() -> EvalReport:
             demo_store.reset()
             response = run_support_turn(
                 session_id=f"eval_{case.id}",
-                customer_email="maya@example.com",
+                customer_email=case.customer_email,
                 message=case.message,
             )
             if response.intent == case.expected_intent:

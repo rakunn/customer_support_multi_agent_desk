@@ -76,6 +76,11 @@ class DemoStore:
                 create table if not exists refunded_approvals (
                     approval_id text primary key
                 );
+                create table if not exists refunded_orders (
+                    order_id text primary key,
+                    approval_id text not null,
+                    processed_at text not null
+                );
                 """
             )
 
@@ -90,6 +95,7 @@ class DemoStore:
         customers = [Customer.model_validate(item) for item in _load_json(DATA_DIR / "seed_customers.json")]
         orders = [Order.model_validate(item) for item in _load_json(DATA_DIR / "seed_orders.json")]
         with self._connect() as connection:
+            connection.execute("delete from refunded_orders")
             connection.execute("delete from refunded_approvals")
             connection.execute("delete from agent_events")
             connection.execute("delete from approvals")
@@ -173,6 +179,38 @@ class DemoStore:
             rows = connection.execute("select approval_id from refunded_approvals").fetchall()
         return {row["approval_id"] for row in rows}
 
+    @property
+    def refunded_order_ids(self) -> set[str]:
+        with self._connect() as connection:
+            rows = connection.execute("select order_id from refunded_orders").fetchall()
+        return {row["order_id"] for row in rows}
+
+    def is_order_refunded(self, order_id: str) -> bool:
+        normalized_order_id = order_id.strip().removeprefix("#")
+        with self._connect() as connection:
+            row = connection.execute(
+                "select 1 from refunded_orders where order_id = ?",
+                (normalized_order_id,),
+            ).fetchone()
+        return row is not None
+
+    def find_refund_approval(
+        self,
+        order_id: str,
+        statuses: set[str] | None = None,
+    ) -> ApprovalRequest | None:
+        normalized_order_id = order_id.strip().removeprefix("#")
+        approvals = [
+            approval
+            for approval in self.approvals.values()
+            if approval.order_id == normalized_order_id
+            and approval.action_type == "refund"
+            and (statuses is None or approval.status in statuses)
+        ]
+        if not approvals:
+            return None
+        return sorted(approvals, key=lambda approval: approval.created_at)[0]
+
     def save_order(self, order: Order, is_seed: bool = False) -> Order:
         with self._connect() as connection:
             connection.execute(
@@ -229,15 +267,24 @@ class DemoStore:
         with self._connect() as connection:
             connection.execute("insert into agent_events (payload) values (?)", (json.dumps(event),))
 
-    def mark_refunded(self, approval_id: str) -> None:
+    def mark_refunded(self, approval_id: str, order_id: str) -> None:
+        processed_at = utc_now().isoformat()
         with self._connect() as connection:
             connection.execute(
                 "insert or ignore into refunded_approvals (approval_id) values (?)",
                 (approval_id,),
             )
+            connection.execute(
+                """
+                insert or ignore into refunded_orders (order_id, approval_id, processed_at)
+                values (?, ?, ?)
+                """,
+                (order_id, approval_id, processed_at),
+            )
 
     def purge_workflow(self) -> None:
         with self._connect() as connection:
+            connection.execute("delete from refunded_orders")
             connection.execute("delete from refunded_approvals")
             connection.execute("delete from agent_events")
             connection.execute("delete from approvals")
@@ -265,10 +312,14 @@ class DemoStore:
                 "refunded_approvals": [
                     dict(row) for row in connection.execute("select * from refunded_approvals").fetchall()
                 ],
+                "refunded_orders": [
+                    dict(row) for row in connection.execute("select * from refunded_orders").fetchall()
+                ],
             }
 
     def restore(self, snapshot: dict[str, Any]) -> None:
         with self._connect() as connection:
+            connection.execute("delete from refunded_orders")
             connection.execute("delete from refunded_approvals")
             connection.execute("delete from agent_events")
             connection.execute("delete from approvals")
@@ -298,6 +349,13 @@ class DemoStore:
             connection.executemany(
                 "insert into refunded_approvals (approval_id) values (:approval_id)",
                 snapshot["refunded_approvals"],
+            )
+            connection.executemany(
+                """
+                insert into refunded_orders (order_id, approval_id, processed_at)
+                values (:order_id, :approval_id, :processed_at)
+                """,
+                snapshot.get("refunded_orders", []),
             )
 
 

@@ -20,6 +20,12 @@ def approve_refund_request(approval_id: str) -> ApprovalDecisionResponse | ToolE
             message="No approval request was found for that ID.",
         )
 
+    if demo_store.is_order_refunded(approval.order_id):
+        return ToolError(
+            code="refund_already_processed",
+            message="A refund has already been processed for that order.",
+        )
+
     approved = approval.model_copy(update={"status": "approved", "updated_at": utc_now()})
     demo_store.save_approval(approved)
     refund_result = issue_mock_refund(approval_id)

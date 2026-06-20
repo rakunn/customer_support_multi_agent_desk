@@ -45,3 +45,9 @@ flowchart TD
 The MVP intentionally avoids requiring an OpenAI key for the portfolio demo. It uses deterministic local routing and lexical retrieval so tests and evals are repeatable. `.env.example` keeps the project ready for a future OpenAI Agents SDK adapter.
 
 The local SQLite database is created from `DATABASE_URL` and stores customers, seed orders, custom orders, tickets, approvals, refund markers, and audit traces. Database Admin can clear workflow data while keeping orders, or restore the exact JSON seed customers and orders and delete custom orders.
+
+## Refund Guardrails
+
+Refund safety is enforced at deterministic service and tool boundaries, not only through agent wording. A refund request must come from a verified customer, the order must belong to that customer, a pending refund approval is reused instead of duplicated, and an order with a processed refund cannot create another refund request. Damage claims for orders that are still in transit become shipping investigations rather than refund approvals.
+
+This boundary is important for future LLM-backed agents: the model can classify intent and choose tools, but the tools still reject unsafe or duplicate state transitions. Customer identity should be bound from authenticated runtime context when exposing refund tools to an LLM, not trusted from model-generated text.

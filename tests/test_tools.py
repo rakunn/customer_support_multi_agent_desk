@@ -78,9 +78,23 @@ def test_final_sale_refund_is_not_auto_eligible() -> None:
     assert "final_sale" in result.risk_flags
 
 
+def test_refund_approval_request_rejects_wrong_customer() -> None:
+    result = create_refund_approval_request(
+        order_id="1005",
+        customer_id="cust_002",
+        reason="Item arrived damaged.",
+        amount=125.0,
+        ticket_id="ticket_demo",
+    )
+
+    assert isinstance(result, ToolError)
+    assert result.code == "order_customer_mismatch"
+
+
 def test_pending_approval_cannot_issue_refund() -> None:
     approval = create_refund_approval_request(
         order_id="1005",
+        customer_id="cust_001",
         reason="Item arrived damaged.",
         amount=125.0,
         ticket_id="ticket_demo",

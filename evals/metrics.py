@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 class EvalCase(BaseModel):
     id: str
     message: str
+    customer_email: str = "maya@example.com"
     expected_intent: str
     expected_agent: str
     expected_tools: list[str] = Field(default_factory=list)
@@ -19,4 +20,3 @@ class EvalReport(BaseModel):
     refund_decision_accuracy: float
     guardrail_pass_rate: float
     unsupported_refund_promise_rate: float
-

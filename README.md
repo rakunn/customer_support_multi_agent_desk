@@ -12,6 +12,7 @@ The MVP is deterministic and local by design, so reviewers can run it without AP
 - Customer, order, ticket, refund, approval, and knowledge-base tools with Pydantic schemas.
 - Human-in-the-loop refund approval queue with mock approve/reject actions.
 - Input, tool, and output guardrails for prompt injection, off-topic requests, refund limits, and unsupported promises.
+- Refund workflow guardrails for customer/order ownership, duplicate pending approvals, processed refunds, and not-delivered damage claims.
 - Local RAG-style policy retrieval over Markdown support docs.
 - Audit trace timeline for agent handoffs, tool use, and final responses.
 - Static support-desk UI served by FastAPI.

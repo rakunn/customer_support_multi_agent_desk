@@ -71,11 +71,32 @@ def check_refund_eligibility(order_id: str, reason: str) -> RefundEligibilityRes
 
 def create_refund_approval_request(
     order_id: str,
+    customer_id: str,
     reason: str,
     amount: float,
     ticket_id: str | None = None,
 ) -> ApprovalRequest | ToolError:
-    eligibility = check_refund_eligibility(order_id, reason)
+    order = lookup_order(order_id)
+    if isinstance(order, ToolError):
+        return order
+
+    if order.customer_id != customer_id:
+        return ToolError(
+            code="order_customer_mismatch",
+            message="That order does not belong to the verified customer.",
+        )
+
+    existing_pending = demo_store.find_refund_approval(order_id, statuses={"pending"})
+    if existing_pending is not None:
+        return existing_pending
+
+    if demo_store.is_order_refunded(order_id):
+        return ToolError(
+            code="refund_already_processed",
+            message="A refund has already been processed for that order.",
+        )
+
+    eligibility = check_refund_eligibility(order.id, reason)
     if isinstance(eligibility, ToolError):
         return eligibility
 
@@ -108,13 +129,13 @@ def issue_mock_refund(approval_id: str) -> RefundResult | ToolError:
             message="Refund cannot be issued until a human approver approves the request.",
         )
 
-    if approval.id in demo_store.refunded_approval_ids:
+    if approval.id in demo_store.refunded_approval_ids or demo_store.is_order_refunded(approval.order_id):
         return ToolError(
             code="refund_already_processed",
             message="This approval has already been processed.",
         )
 
-    demo_store.mark_refunded(approval.id)
+    demo_store.mark_refunded(approval.id, approval.order_id)
     return RefundResult(
         approval_id=approval.id,
         order_id=approval.order_id,
