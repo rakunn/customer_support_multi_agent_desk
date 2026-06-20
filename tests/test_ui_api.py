@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+from pathlib import Path
 
 from app.db.seed import demo_store
 from app.main import app
@@ -16,6 +17,25 @@ def test_root_serves_support_desk_ui() -> None:
     assert response.status_code == 200
     assert "Customer Support Agent Desk" in response.text
     assert "Approval Queue" in response.text
+
+
+def test_root_exposes_navigation_targets_for_approvals_and_evals() -> None:
+    client = TestClient(app)
+
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert 'data-view="approvals"' in response.text
+    assert 'data-view="evaluations"' in response.text
+    assert 'id="evaluationPanel"' in response.text
+    assert 'id="runEvals"' in response.text
+
+
+def test_frontend_script_wires_navigation_and_eval_runner() -> None:
+    script = Path("frontend/app.js").read_text(encoding="utf-8")
+
+    assert "setActiveView" in script
+    assert "/api/evals/run" in script
 
 
 def test_ticket_and_trace_endpoints_return_chat_state() -> None:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 import json
 from datetime import UTC, datetime
 from pathlib import Path
@@ -57,6 +58,28 @@ class DemoStore:
         approval_id = f"approval_{self._approval_counter:04d}"
         self._approval_counter += 1
         return approval_id
+
+    def snapshot(self) -> dict[str, Any]:
+        return {
+            "customers": deepcopy(self.customers),
+            "orders": deepcopy(self.orders),
+            "tickets": deepcopy(self.tickets),
+            "approvals": deepcopy(self.approvals),
+            "agent_events": deepcopy(self.agent_events),
+            "refunded_approval_ids": deepcopy(self.refunded_approval_ids),
+            "_ticket_counter": self._ticket_counter,
+            "_approval_counter": self._approval_counter,
+        }
+
+    def restore(self, snapshot: dict[str, Any]) -> None:
+        self.customers = snapshot["customers"]
+        self.orders = snapshot["orders"]
+        self.tickets = snapshot["tickets"]
+        self.approvals = snapshot["approvals"]
+        self.agent_events = snapshot["agent_events"]
+        self.refunded_approval_ids = snapshot["refunded_approval_ids"]
+        self._ticket_counter = snapshot["_ticket_counter"]
+        self._approval_counter = snapshot["_approval_counter"]
 
 
 def utc_now() -> datetime:

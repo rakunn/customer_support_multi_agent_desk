@@ -112,11 +112,17 @@ textarea {
 .approval-panel,
 .trace-panel,
 .chat-panel,
-.context-panel {
+.context-panel,
+.evaluation-panel {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 8px;
   box-shadow: var(--shadow);
+}
+
+.is-focused-panel {
+  border-color: #7fb8b5;
+  box-shadow: 0 0 0 3px rgba(18, 109, 114, 0.12), var(--shadow);
 }
 
 .ticket-section {
@@ -141,6 +147,13 @@ textarea {
   letter-spacing: 0;
 }
 
+.section-header p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
 .icon-button {
   width: 32px;
   height: 32px;
@@ -160,7 +173,8 @@ textarea {
 
 .ticket-list,
 .approval-list,
-.trace-list {
+.trace-list,
+.eval-results {
   display: grid;
   gap: 10px;
   padding: 12px;
@@ -372,6 +386,46 @@ dd {
   gap: 18px;
 }
 
+.evaluation-panel {
+  scroll-margin: 18px;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.metric-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: #fbfcfd;
+}
+
+.metric-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.metric-card strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 20px;
+  line-height: 1.1;
+}
+
+.inline-error {
+  border: 1px solid #f1b8b3;
+  border-radius: 8px;
+  padding: 12px;
+  color: var(--danger);
+  background: #fff2f0;
+  font-size: 13px;
+}
+
 .secondary-button,
 .approval-actions button {
   min-height: 32px;
@@ -430,7 +484,8 @@ dd {
   }
 
   .desk-grid,
-  .lower-grid {
+  .lower-grid,
+  .metric-grid {
     grid-template-columns: 1fr;
   }
 

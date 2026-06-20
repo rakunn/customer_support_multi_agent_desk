@@ -31,6 +31,7 @@ def _ratio(passed: int, total: int) -> float:
 
 
 def run_evaluations() -> EvalReport:
+    snapshot = demo_store.snapshot()
     cases = load_eval_cases()
     routing_passed = 0
     specialist_passed = 0
@@ -41,40 +42,43 @@ def run_evaluations() -> EvalReport:
     guardrail_passed = 0
     unsupported_refund_promises = 0
 
-    for case in cases:
-        demo_store.reset()
-        response = run_support_turn(
-            session_id=f"eval_{case.id}",
-            customer_email="maya@example.com",
-            message=case.message,
-        )
-        if response.intent == case.expected_intent:
-            routing_passed += 1
-        if response.agent == case.expected_agent:
-            specialist_passed += 1
-        if set(case.expected_tools).issubset(set(response.tool_calls)):
-            required_tools_passed += 1
-        if case.expected_guardrail is not None:
-            guardrail_cases += 1
-            if response.status == "blocked" and response.intent == case.expected_intent:
-                guardrail_passed += 1
-        if case.expected_approval_required is not None:
-            refund_cases += 1
-            approval_required = response.approval_request_id is not None
-            if approval_required == case.expected_approval_required:
-                refund_passed += 1
-        if "refund has been issued" in response.message.lower():
-            unsupported_refund_promises += 1
+    try:
+        for case in cases:
+            demo_store.reset()
+            response = run_support_turn(
+                session_id=f"eval_{case.id}",
+                customer_email="maya@example.com",
+                message=case.message,
+            )
+            if response.intent == case.expected_intent:
+                routing_passed += 1
+            if response.agent == case.expected_agent:
+                specialist_passed += 1
+            if set(case.expected_tools).issubset(set(response.tool_calls)):
+                required_tools_passed += 1
+            if case.expected_guardrail is not None:
+                guardrail_cases += 1
+                if response.status == "blocked" and response.intent == case.expected_intent:
+                    guardrail_passed += 1
+            if case.expected_approval_required is not None:
+                refund_cases += 1
+                approval_required = response.approval_request_id is not None
+                if approval_required == case.expected_approval_required:
+                    refund_passed += 1
+            if "refund has been issued" in response.message.lower():
+                unsupported_refund_promises += 1
 
-    return EvalReport(
-        total_cases=len(cases),
-        routing_accuracy=_ratio(routing_passed, len(cases)),
-        specialist_accuracy=_ratio(specialist_passed, len(cases)),
-        required_tool_accuracy=_ratio(required_tools_passed, len(cases)),
-        refund_decision_accuracy=_ratio(refund_passed, refund_cases),
-        guardrail_pass_rate=_ratio(guardrail_passed, guardrail_cases),
-        unsupported_refund_promise_rate=_ratio(unsupported_refund_promises, len(cases)),
-    )
+        return EvalReport(
+            total_cases=len(cases),
+            routing_accuracy=_ratio(routing_passed, len(cases)),
+            specialist_accuracy=_ratio(specialist_passed, len(cases)),
+            required_tool_accuracy=_ratio(required_tools_passed, len(cases)),
+            refund_decision_accuracy=_ratio(refund_passed, refund_cases),
+            guardrail_pass_rate=_ratio(guardrail_passed, guardrail_cases),
+            unsupported_refund_promise_rate=_ratio(unsupported_refund_promises, len(cases)),
+        )
+    finally:
+        demo_store.restore(snapshot)
 
 
 def main() -> None:
@@ -86,4 +90,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
