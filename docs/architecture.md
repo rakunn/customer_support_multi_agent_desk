@@ -1,6 +1,6 @@
 # Architecture
 
-Customer Support Agent Desk is a deterministic local MVP of a production-style AI support workflow. The backend is FastAPI, the agent layer is organized as specialist modules, and all tool boundaries use Pydantic schemas.
+Customer Support Agent Desk is a deterministic local MVP of a production-style AI support workflow with an optional live OpenAI Agents SDK runtime. The backend is FastAPI, the agent layer is organized as specialist modules, and all tool boundaries use Pydantic schemas.
 
 ```mermaid
 flowchart TD
@@ -33,6 +33,7 @@ flowchart TD
 
 - `app/api/`: FastAPI routes for chat, orders, admin reset actions, tickets, approvals, traces, and evals.
 - `app/agents/`: deterministic local agents for triage, FAQ, orders, refunds, technical issues, escalation, and quality review.
+- `app/services/openai_agent_adapter.py`: optional OpenAI Agents SDK adapter with triage-to-specialist handoffs and context-bound tools.
 - `app/tools/`: typed tool functions for customers, orders, tickets, refunds, and knowledge-base search.
 - `app/guardrails/`: input, tool, and output guardrails.
 - `app/services/`: orchestration, RAG search, approval decisions, and audit logs.
@@ -42,7 +43,7 @@ flowchart TD
 
 ## Runtime Model
 
-The MVP intentionally avoids requiring an OpenAI key. It uses deterministic local routing and lexical retrieval so tests and evals are repeatable. `.env.example` keeps the project ready for a future OpenAI Agents SDK adapter.
+The default runtime intentionally avoids requiring an OpenAI key. It uses deterministic local routing and lexical retrieval so tests and evals are repeatable. Set `AGENT_RUNTIME=openai` with `OPENAI_API_KEY` and `OPENAI_MODEL` to route `/api/chat` through the live OpenAI Agents SDK adapter.
 
 The local SQLite database is created from `DATABASE_URL` and stores customers, seed orders, custom orders, tickets, approvals, refund markers, and audit traces. Database Admin can clear workflow data while keeping orders, or restore the exact JSON seed customers and orders and delete custom orders.
 

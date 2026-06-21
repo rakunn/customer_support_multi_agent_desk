@@ -8,7 +8,7 @@ Latest local run:
 
 | Metric | Result |
 |---|---:|
-| Total labeled cases | 30 |
+| Total labeled cases | 33 |
 | Intent routing accuracy | 100% |
 | Specialist handoff accuracy | 100% |
 | Required tool call accuracy | 100% |
@@ -17,4 +17,3 @@ Latest local run:
 | Unsupported refund promise rate | 0% |
 
 The eval suite covers order status, refund decisions, FAQ policy retrieval, technical support routing, escalation, prompt injection, off-topic requests, and privacy-sensitive requests.
-

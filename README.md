@@ -2,7 +2,7 @@
 
 Customer Support Agent Desk is an experimental multi-agent customer support project for exploring how specialist agents interact in a support workflow. It routes messages to specialist agents, uses typed tools over mock customer and order data, retrieves policy answers from local Markdown docs, creates human approval requests for risky refunds, applies guardrails, logs audit traces, and measures behavior with eval cases.
 
-The MVP is deterministic and local by design, so it can be run and inspected without API keys. `.env.example` keeps the project ready for a future live OpenAI Agents SDK adapter.
+The default MVP is deterministic and local by design, so it can be run and inspected without API keys. A feature-flagged live OpenAI Agents SDK adapter is available for API-backed runs.
 
 ![Support desk refund approval](docs/screenshots/support-desk-refund-approval.png)
 
@@ -17,7 +17,8 @@ The MVP is deterministic and local by design, so it can be run and inspected wit
 - Audit trace timeline for agent handoffs, tool use, and final responses.
 - Static support-desk UI served by FastAPI.
 - SQLite-backed demo store with custom order creation and seed-data reset controls.
-- 30-case eval suite for routing, tools, refunds, and guardrails.
+- 33-case eval suite for routing, tools, refunds, and guardrails.
+- Optional live OpenAI Agents SDK runtime with specialist handoffs behind the same chat API.
 
 ## Architecture
 
@@ -64,7 +65,9 @@ If you do not have the existing `.venv`, install dependencies from `pyproject.to
 Copy `.env.example` to `.env` for local configuration:
 
 ```env
+AGENT_RUNTIME=local
 OPENAI_API_KEY=your_openai_api_key
+OPENAI_MODEL=gpt-5.5
 DATABASE_URL=sqlite+aiosqlite:///./support_desk.db
 VECTOR_DB_DIR=./.vector_db
 APP_ENV=development
@@ -72,6 +75,10 @@ REFUND_AUTO_APPROVAL_LIMIT=50.00
 ENABLE_MOCK_REFUNDS=true
 ENABLE_AGENT_TRACING=true
 ```
+
+`AGENT_RUNTIME=local` keeps the deterministic no-key MVP behavior. Set
+`AGENT_RUNTIME=openai` with `OPENAI_API_KEY` to exercise the live OpenAI Agents
+SDK adapter.
 
 ## API
 
@@ -97,7 +104,7 @@ Latest local eval run:
 
 | Metric | Result |
 |---|---:|
-| Total labeled cases | 30 |
+| Total labeled cases | 33 |
 | Intent routing accuracy | 100% |
 | Specialist handoff accuracy | 100% |
 | Required tool call accuracy | 100% |
@@ -124,6 +131,7 @@ Full script: [docs/demo_script.md](docs/demo_script.md).
 make dev
 make test
 make eval
+make eval-live
 make seed
 make index-kb
 ```
@@ -137,7 +145,7 @@ make index-kb
 
 ## Known Limitations
 
-- Agents are deterministic local implementations, not live OpenAI Agents SDK runs yet.
+- Live OpenAI Agents SDK runs are optional and require `AGENT_RUNTIME=openai` plus `OPENAI_API_KEY`.
 - Data is stored in a local SQLite demo database seeded from JSON; no production migration layer is included.
 - Knowledge-base retrieval is lexical and local, not Chroma/FAISS/pgvector.
 - The UI is static HTML/CSS/JS served by FastAPI rather than a separate Next.js app.
@@ -145,7 +153,7 @@ make index-kb
 
 ## Future Improvements
 
-- Add a live OpenAI Agents SDK adapter behind the current service boundary.
+- Add persistent live conversation state for OpenAI-backed runs.
 - Add a production database migration path and PostgreSQL deployment option.
 - Replace lexical retrieval with Chroma, FAISS, or pgvector.
 - Add auth, role-based approval permissions, and real ticket integrations.
