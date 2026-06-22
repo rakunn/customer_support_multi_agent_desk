@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from typing import Literal
 
+from dotenv import load_dotenv
 from pydantic import BaseModel
 
 
@@ -31,6 +32,7 @@ def _env_bool(name: str, default: bool) -> bool:
 
 @lru_cache
 def get_settings() -> Settings:
+    load_dotenv(dotenv_path=Path.cwd() / ".env", override=False)
     return Settings(
         agent_runtime=os.getenv("AGENT_RUNTIME", "local").strip().lower(),
         openai_api_key=os.getenv("OPENAI_API_KEY", ""),

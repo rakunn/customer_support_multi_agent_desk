@@ -11,6 +11,7 @@ from app.api.evals import router as evals_router
 from app.api.orders import router as orders_router
 from app.api.tickets import router as tickets_router
 from app.api.traces import router as traces_router
+from app.config import get_settings
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 FRONTEND_DIR = PROJECT_ROOT / "frontend"
@@ -40,4 +41,9 @@ async def support_desk() -> FileResponse:
 
 @app.get("/health", tags=["system"])
 async def health() -> dict[str, str]:
-    return {"status": "ok"}
+    settings = get_settings()
+    return {
+        "status": "ok",
+        "agent_runtime": settings.agent_runtime,
+        "openai_model": settings.openai_model,
+    }

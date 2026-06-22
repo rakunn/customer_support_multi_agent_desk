@@ -2,6 +2,7 @@ const chatForm = document.querySelector("#chatForm");
 const chatLog = document.querySelector("#chatLog");
 const messageInput = document.querySelector("#messageInput");
 const customerEmail = document.querySelector("#customerEmail");
+const sendButton = chatForm.querySelector('button[type="submit"]');
 const ticketList = document.querySelector("#ticketList");
 const approvalList = document.querySelector("#approvalList");
 const traceList = document.querySelector("#traceList");
@@ -18,6 +19,7 @@ const ordersList = document.querySelector("#ordersList");
 const adminStats = document.querySelector("#adminStats");
 const resetDatabaseButton = document.querySelector("#resetDatabase");
 const purgeWorkflowButton = document.querySelector("#purgeWorkflow");
+const runtimeStatus = document.querySelector("#runtimeStatus");
 
 function escapeHtml(value) {
   return String(value)
@@ -60,6 +62,21 @@ async function fetchJson(url, options) {
     throw new Error(`Request failed: ${response.status}`);
   }
   return response.json();
+}
+
+async function refreshRuntimeStatus() {
+  try {
+    const health = await fetchJson("/health");
+    const label =
+      health.agent_runtime === "openai"
+        ? `OpenAI Agents SDK · ${health.openai_model}`
+        : "Local deterministic runtime";
+    runtimeStatus.innerHTML = `<span class="status-dot"></span>${escapeHtml(label)}`;
+    runtimeStatus.dataset.runtime = health.agent_runtime;
+  } catch (error) {
+    runtimeStatus.innerHTML = '<span class="status-dot"></span>Runtime unavailable';
+    runtimeStatus.dataset.runtime = "error";
+  }
 }
 
 async function refreshTickets() {
@@ -319,6 +336,7 @@ chatForm.addEventListener("submit", async (event) => {
   if (!message) {
     return;
   }
+  sendButton.disabled = true;
   appendMessage("customer", "Customer", message);
   try {
     const response = await fetchJson("/api/chat", {
@@ -331,9 +349,12 @@ chatForm.addEventListener("submit", async (event) => {
       }),
     });
     appendMessage("agent", response.agent, response.message);
+    messageInput.value = "";
     await refreshAll();
   } catch (error) {
     appendMessage("agent", "System", "I could not send that message. Please try again.");
+  } finally {
+    sendButton.disabled = false;
   }
 });
 
@@ -391,4 +412,5 @@ createOrderForm.addEventListener("submit", createOrder);
 resetDatabaseButton.addEventListener("click", resetDatabase);
 purgeWorkflowButton.addEventListener("click", purgeWorkflow);
 
+refreshRuntimeStatus();
 refreshAll();

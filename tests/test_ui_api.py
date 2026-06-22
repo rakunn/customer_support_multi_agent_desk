@@ -19,6 +19,16 @@ def test_root_serves_support_desk_ui() -> None:
     assert "Approval Queue" in response.text
 
 
+def test_root_uses_dynamic_runtime_status_label() -> None:
+    client = TestClient(app)
+
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert 'id="runtimeStatus"' in response.text
+    assert "Local deterministic agents" not in response.text
+
+
 def test_root_chat_starts_without_pretending_customer_sent_message() -> None:
     client = TestClient(app)
 
@@ -73,9 +83,19 @@ def test_frontend_script_wires_navigation_and_eval_runner() -> None:
     script = Path("frontend/app.js").read_text(encoding="utf-8")
 
     assert "setActiveView" in script
+    assert "refreshRuntimeStatus" in script
+    assert "/health" in script
     assert "/api/evals/run" in script
     assert "/api/orders" in script
     assert "/api/admin/reset" in script
+
+
+def test_frontend_script_prevents_duplicate_chat_submits() -> None:
+    script = Path("frontend/app.js").read_text(encoding="utf-8")
+
+    assert "sendButton.disabled = true" in script
+    assert "messageInput.value = \"\"" in script
+    assert "sendButton.disabled = false" in script
 
 
 def test_ticket_and_trace_endpoints_return_chat_state() -> None:
