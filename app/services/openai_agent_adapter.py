@@ -4,8 +4,10 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from agents import Agent, RunConfig, RunContextWrapper, Runner, function_tool
+from agents.memory import SQLiteSession
 
 from app.config import Settings
+from app.db.seed import demo_store
 from app.guardrails.output_guardrails import review_output
 from app.schemas.agent_outputs import ChatResponse, ToolError
 from app.services.audit_service import log_agent_event
@@ -278,6 +280,10 @@ async def run_openai_support_turn(
 ) -> ChatResponse:
     context = OpenAISupportContext(session_id=session_id, customer_email=customer_email)
     support_agents = build_support_agents(model=settings.openai_model)
+    sdk_session = SQLiteSession(
+        session_id=session_id,
+        db_path=demo_store.db_path,
+    )
     run_config = RunConfig(
         model=settings.openai_model,
         tracing_disabled=not settings.enable_agent_tracing,
@@ -292,6 +298,7 @@ async def run_openai_support_turn(
             context=context,
             max_turns=8,
             run_config=run_config,
+            session=sdk_session,
         )
     except Exception as exc:
         log_agent_event(

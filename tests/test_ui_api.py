@@ -98,6 +98,36 @@ def test_frontend_script_prevents_duplicate_chat_submits() -> None:
     assert "sendButton.disabled = false" in script
 
 
+def test_frontend_script_uses_stable_chat_session_id() -> None:
+    script = Path("frontend/app.js").read_text(encoding="utf-8")
+
+    assert "const chatSessionId = getChatSessionId();" in script
+    assert "sessionStorage.getItem(CHAT_SESSION_STORAGE_KEY)" in script
+    assert "session_id: chatSessionId" in script
+    assert "session_id: `ui_${Date.now()}`" not in script
+
+
+def test_frontend_script_replaces_thinking_bubble_with_typed_agent_response() -> None:
+    script = Path("frontend/app.js").read_text(encoding="utf-8")
+
+    assert "appendThinkingMessage" in script
+    assert "setAttribute(\"aria-busy\", \"true\")" in script
+    assert "const pendingAgentMessage = appendThinkingMessage();" in script
+    assert "const minimumThinkingTime = wait(320);" in script
+    assert "await minimumThinkingTime;" in script
+    assert "await typeMessageText(pendingAgentMessage, response.agent, response.message);" in script
+    assert 'appendMessage("agent", response.agent, response.message)' not in script
+
+
+def test_frontend_styles_render_accessible_thinking_state() -> None:
+    styles = Path("frontend/styles.css").read_text(encoding="utf-8")
+
+    assert ".message.pending" in styles
+    assert ".thinking-copy" in styles
+    assert ".thinking-dot" in styles
+    assert "@media (prefers-reduced-motion: reduce)" in styles
+
+
 def test_ticket_and_trace_endpoints_return_chat_state() -> None:
     client = TestClient(app)
     client.post(

@@ -20,6 +20,20 @@ const adminStats = document.querySelector("#adminStats");
 const resetDatabaseButton = document.querySelector("#resetDatabase");
 const purgeWorkflowButton = document.querySelector("#purgeWorkflow");
 const runtimeStatus = document.querySelector("#runtimeStatus");
+const CHAT_SESSION_STORAGE_KEY = "supportDeskChatSessionId";
+const chatSessionId = getChatSessionId();
+
+function getChatSessionId() {
+  const existingSessionId = sessionStorage.getItem(CHAT_SESSION_STORAGE_KEY);
+  if (existingSessionId) {
+    return existingSessionId;
+  }
+  const generatedSessionId = window.crypto?.randomUUID
+    ? `ui_${window.crypto.randomUUID()}`
+    : `ui_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+  sessionStorage.setItem(CHAT_SESSION_STORAGE_KEY, generatedSessionId);
+  return generatedSessionId;
+}
 
 function escapeHtml(value) {
   return String(value)
@@ -30,15 +44,92 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function appendMessage(role, label, text) {
+function scrollChatToLatest() {
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+function createMessageArticle(role, label) {
   const article = document.createElement("article");
   article.className = `message ${role}`;
-  article.innerHTML = `
-    <div class="message-meta">${escapeHtml(label)}</div>
-    <p>${escapeHtml(text)}</p>
-  `;
+
+  const meta = document.createElement("div");
+  meta.className = "message-meta";
+  meta.textContent = label;
+
+  const paragraph = document.createElement("p");
+
+  article.append(meta, paragraph);
+  return article;
+}
+
+function appendMessage(role, label, text) {
+  const article = createMessageArticle(role, label);
+  article.querySelector("p").textContent = text;
   chatLog.appendChild(article);
-  chatLog.scrollTop = chatLog.scrollHeight;
+  scrollChatToLatest();
+  return article;
+}
+
+function appendThinkingMessage() {
+  const article = createMessageArticle("agent pending", "Agent");
+  article.setAttribute("role", "status");
+  article.setAttribute("aria-live", "polite");
+  article.setAttribute("aria-busy", "true");
+
+  article.querySelector("p").innerHTML = `
+    <span class="thinking-copy">Agent is thinking
+      <span class="thinking-dots" aria-hidden="true">
+        <span class="thinking-dot"></span>
+        <span class="thinking-dot"></span>
+        <span class="thinking-dot"></span>
+      </span>
+    </span>
+  `;
+
+  chatLog.appendChild(article);
+  scrollChatToLatest();
+  return article;
+}
+
+function shouldReduceMotion() {
+  return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function wait(milliseconds) {
+  return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+}
+
+async function typeMessageText(article, label, text) {
+  const meta = article.querySelector(".message-meta");
+  const paragraph = article.querySelector("p");
+  const message = String(text);
+
+  article.classList.remove("pending");
+  article.classList.add("typing");
+  article.removeAttribute("role");
+  article.removeAttribute("aria-busy");
+  article.removeAttribute("aria-live");
+  meta.textContent = label;
+  paragraph.className = "";
+  paragraph.textContent = "";
+
+  if (shouldReduceMotion()) {
+    paragraph.textContent = message;
+    article.classList.remove("typing");
+    scrollChatToLatest();
+    return;
+  }
+
+  for (let index = 0; index < message.length; index += 1) {
+    paragraph.textContent += message[index];
+    if (index % 4 === 0 || index === message.length - 1) {
+      scrollChatToLatest();
+    }
+    await wait(/[.!?]/.test(message[index]) ? 42 : 12);
+  }
+
+  article.classList.remove("typing");
+  scrollChatToLatest();
 }
 
 function showInlineError(container, message) {
@@ -338,21 +429,25 @@ chatForm.addEventListener("submit", async (event) => {
   }
   sendButton.disabled = true;
   appendMessage("customer", "Customer", message);
+  const pendingAgentMessage = appendThinkingMessage();
+  const minimumThinkingTime = wait(320);
   try {
     const response = await fetchJson("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        session_id: `ui_${Date.now()}`,
+        session_id: chatSessionId,
         customer_email: customerEmail.value.trim(),
         message,
       }),
     });
-    appendMessage("agent", response.agent, response.message);
     messageInput.value = "";
+    await minimumThinkingTime;
+    await typeMessageText(pendingAgentMessage, response.agent, response.message);
     await refreshAll();
   } catch (error) {
-    appendMessage("agent", "System", "I could not send that message. Please try again.");
+    await minimumThinkingTime;
+    await typeMessageText(pendingAgentMessage, "System", "I could not send that message. Please try again.");
   } finally {
     sendButton.disabled = false;
   }

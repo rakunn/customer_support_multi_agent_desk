@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from app.config import get_settings
+from app.schemas.conversation import ConversationState
 from app.schemas.customer import Customer
 from app.schemas.order import Order
 from app.schemas.refund import ApprovalRequest
@@ -81,6 +82,10 @@ class DemoStore:
                     approval_id text not null,
                     processed_at text not null
                 );
+                create table if not exists conversation_states (
+                    session_id text primary key,
+                    payload text not null
+                );
                 """
             )
 
@@ -98,6 +103,7 @@ class DemoStore:
             connection.execute("delete from refunded_orders")
             connection.execute("delete from refunded_approvals")
             connection.execute("delete from agent_events")
+            connection.execute("delete from conversation_states")
             connection.execute("delete from approvals")
             connection.execute("delete from tickets")
             connection.execute("delete from orders")
@@ -267,6 +273,27 @@ class DemoStore:
         with self._connect() as connection:
             connection.execute("insert into agent_events (payload) values (?)", (json.dumps(event),))
 
+    def get_conversation_state(self, session_id: str) -> ConversationState | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "select payload from conversation_states where session_id = ?",
+                (session_id,),
+            ).fetchone()
+        if row is None:
+            return None
+        return ConversationState.model_validate_json(row["payload"])
+
+    def save_conversation_state(self, state: ConversationState) -> ConversationState:
+        with self._connect() as connection:
+            connection.execute(
+                """
+                insert into conversation_states (session_id, payload) values (?, ?)
+                on conflict(session_id) do update set payload = excluded.payload
+                """,
+                (state.session_id, state.model_dump_json()),
+            )
+        return state
+
     def mark_refunded(self, approval_id: str, order_id: str) -> None:
         processed_at = utc_now().isoformat()
         with self._connect() as connection:
@@ -287,6 +314,7 @@ class DemoStore:
             connection.execute("delete from refunded_orders")
             connection.execute("delete from refunded_approvals")
             connection.execute("delete from agent_events")
+            connection.execute("delete from conversation_states")
             connection.execute("delete from approvals")
             connection.execute("delete from tickets")
 
@@ -309,6 +337,9 @@ class DemoStore:
                 "tickets": [dict(row) for row in connection.execute("select * from tickets").fetchall()],
                 "approvals": [dict(row) for row in connection.execute("select * from approvals").fetchall()],
                 "agent_events": [dict(row) for row in connection.execute("select * from agent_events").fetchall()],
+                "conversation_states": [
+                    dict(row) for row in connection.execute("select * from conversation_states").fetchall()
+                ],
                 "refunded_approvals": [
                     dict(row) for row in connection.execute("select * from refunded_approvals").fetchall()
                 ],
@@ -322,6 +353,7 @@ class DemoStore:
             connection.execute("delete from refunded_orders")
             connection.execute("delete from refunded_approvals")
             connection.execute("delete from agent_events")
+            connection.execute("delete from conversation_states")
             connection.execute("delete from approvals")
             connection.execute("delete from tickets")
             connection.execute("delete from orders")
@@ -345,6 +377,10 @@ class DemoStore:
             connection.executemany(
                 "insert into agent_events (id, payload) values (:id, :payload)",
                 snapshot["agent_events"],
+            )
+            connection.executemany(
+                "insert into conversation_states (session_id, payload) values (:session_id, :payload)",
+                snapshot.get("conversation_states", []),
             )
             connection.executemany(
                 "insert into refunded_approvals (approval_id) values (:approval_id)",

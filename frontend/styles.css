@@ -296,6 +296,24 @@ textarea {
   background: #f0faf8;
 }
 
+.message.pending {
+  border-color: #9cc9c5;
+  background: linear-gradient(180deg, #f5fcfb 0%, #edf8f6 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.76);
+}
+
+.message.typing p::after {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 1em;
+  margin-left: 3px;
+  border-radius: 999px;
+  background: var(--accent);
+  vertical-align: -2px;
+  animation: caret-blink 900ms cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
 .message-meta {
   color: var(--muted);
   font-size: 12px;
@@ -303,10 +321,46 @@ textarea {
   margin-bottom: 6px;
 }
 
+.message.pending .message-meta {
+  color: var(--accent-strong);
+}
+
 .message p {
   margin: 0;
   font-size: 14px;
   line-height: 1.5;
+}
+
+.thinking-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+
+.thinking-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 24px;
+}
+
+.thinking-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--accent);
+  opacity: 0.36;
+  transform: translateY(0);
+  animation: thinking-pulse 960ms cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.thinking-dot:nth-child(2) {
+  animation-delay: 130ms;
+}
+
+.thinking-dot:nth-child(3) {
+  animation-delay: 260ms;
 }
 
 .composer {
@@ -342,6 +396,49 @@ textarea {
   background: var(--accent);
   color: white;
   font-weight: 700;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.64;
+}
+
+@keyframes thinking-pulse {
+  0%,
+  80%,
+  100% {
+    opacity: 0.32;
+    transform: translateY(0);
+  }
+
+  40% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes caret-blink {
+  0%,
+  45% {
+    opacity: 1;
+  }
+
+  46%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thinking-dot,
+  .message.typing p::after {
+    animation: none;
+  }
+
+  .thinking-dot {
+    opacity: 0.64;
+    transform: none;
+  }
 }
 
 .context-panel {

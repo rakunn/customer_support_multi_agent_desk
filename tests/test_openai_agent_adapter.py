@@ -7,6 +7,7 @@ import pytest
 from app.config import get_settings
 from app.db.seed import demo_store
 from app.schemas.agent_outputs import ChatResponse, ToolError
+from app.schemas.conversation import ConversationState
 from app.services import openai_agent_adapter
 from app.services.agent_runner import run_support_turn_async
 
@@ -125,6 +126,70 @@ def test_openai_runtime_returns_safe_error_without_local_fallback(
     assert response.tool_calls == []
     assert "local" not in response.message.lower()
     assert demo_store.agent_events[-1]["event_type"] == "sdk_error"
+
+
+def test_openai_runtime_receives_sdk_session_and_app_context_prompt(monkeypatch: pytest.MonkeyPatch) -> None:
+    _enable_openai_runtime(monkeypatch)
+    demo_store.save_conversation_state(
+        ConversationState(
+            session_id="session_openai_context",
+            customer_email="maya@example.com",
+            active_order_id="1005",
+            active_intent="refund_request",
+            pending_fields=["refund_reason"],
+        )
+    )
+
+    async def fake_run(starting_agent, input_payload, **kwargs):
+        assert kwargs["session"].session_id == "session_openai_context"
+        assert "active_order_id: 1005" in input_payload
+        assert "pending_fields: refund_reason" in input_payload
+        assert "Treat the customer message as refund_reason." in input_payload
+        return FakeRunResult(
+            ChatResponse(
+                ticket_id="ticket_123",
+                agent="Refund Agent",
+                intent="refund_request",
+                status="pending_approval",
+                message="I prepared a refund request for manager approval.",
+                approval_request_id="approval_123",
+                tool_calls=[],
+            )
+        )
+
+    monkeypatch.setattr(openai_agent_adapter.Runner, "run", fake_run)
+
+    response = asyncio.run(
+        run_support_turn_async(
+            session_id="session_openai_context",
+            customer_email="maya@example.com",
+            message="It arrived damaged",
+        )
+    )
+
+    assert response.agent == "Refund Agent"
+    assert response.status == "pending_approval"
+
+
+def test_openai_runtime_uses_app_missing_info_state_before_sdk(monkeypatch: pytest.MonkeyPatch) -> None:
+    _enable_openai_runtime(monkeypatch)
+
+    async def fake_run(*args, **kwargs):
+        raise AssertionError("Runner.run should not be called before refund reason is supplied.")
+
+    monkeypatch.setattr(openai_agent_adapter.Runner, "run", fake_run)
+
+    response = asyncio.run(
+        run_support_turn_async(
+            session_id="session_openai_missing_reason",
+            customer_email="maya@example.com",
+            message="I want a refund of 1005# can you help with that?",
+        )
+    )
+
+    assert response.agent == "Refund Agent"
+    assert response.status == "needs_info"
+    assert "reason" in response.message.lower()
 
 
 def test_context_bound_refund_tool_blocks_another_customer_order() -> None:
